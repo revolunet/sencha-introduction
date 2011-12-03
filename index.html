@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Sencha introduction - revolunet</title>
+
+    
+    
+    <script type="text/javascript" src="syntax/shCore.js"></script>
+    <script type="text/javascript" src="syntax/shBrushJScript.js"></script>
+    <link type="text/css" rel="stylesheet" href="syntax/shCoreDefault.css"/>
+    <!-- Your Slides -->
+    <!-- One section is one slide -->
+
+
+    <!-- Your Style -->
+    <!-- Define the style of you presentation -->
+
+    <!-- Maybe a font from http://www.google.com/webfonts ? -->
+    <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet'>
+
+    <style>
+        section li {
+            list-style-type:none;
+            margin-bottom:20px; 
+        }
+        section li .detail {
+            color:#000;
+            font-size:0.8em;
+        }
+        section li .detail2 {
+            color:#AAA;
+            font-size:0.7em;
+        }
+        ul.history li {
+            font-size:0.75em;
+        }
+      html { background-color: black; }
+      body {background-color: white;}
+      /* A section is a slide. It's size is 800x600, and this will never change */
+      section {
+          /* The font from Google */
+          font-family: 'Oswald', arial, serif;
+          font-size: 2em;
+      }
+      h1, h2, h3 {
+          margin-top: 30px;
+          text-align: center;
+      }
+      h4 {
+            margin-top: 10px;
+          text-align: center;
+      }
+      ul {
+          margin-left: 70px;
+          margin-right: 70px;
+      }
+      a { color: #FF0066; text-decoration: none;}
+      a:hover {text-decoration: underline;}
+      footer { position: absolute; bottom: 50px; right: 50px; }
+
+      /* Transition effect */
+      /* Feel free to change the transition effect for original
+         animations. See here:
+         https://developer.mozilla.org/en/CSS/CSS_transitions
+         How to use CSS3 Transitions: */
+      section {
+          -moz-transition: left 400ms linear 0s;
+          -webkit-transition: left 400ms linear 0s;
+          -o-transition: left 400ms linear 0s;
+          -ms-transition: left 400ms linear 0s;
+          transition: left 400ms linear 0s;
+      }
+
+      /* Before */
+      section { left: -150%; }
+      /* Now */
+      section[aria-selected] { left: 0; }
+      /* After */
+      section[aria-selected] ~ section { left: +150% }
+    </style>
+
+
+    <!-- {{{{ *****************  DZSlides CORE 2.0b1 *************************** -->
+    <!-- *********************************************************************** -->
+    <!-- *********************************************************************** -->
+    <!-- *********************************************************************** -->
+    <!-- *********************************************************************** -->
+
+    <!-- This block of code is not supposed to be edited, but if you want to change the behavior of the slides, feel free to hack it ;) -->
+
+    <!-- Default Style -->
+    <style>
+      * { margin: 0; padding: 0; }
+      details {display: none;}
+      body {
+        width: 800px; height: 600px;
+        margin-left: -400px; margin-top: -300px;
+        position: absolute; top: 50%; left: 50%;
+        overflow: hidden;
+      }
+      section {
+        position: absolute;
+        pointer-events: none;
+        width: 100%; height: 100%;
+      }
+      section[aria-selected] { pointer-events: auto;}
+      body {display: none}
+      body.loaded {display: block}
+      
+      div.syntaxhighlighter,
+      div.syntaxhighlighter * {
+        font-size:0.83em !important;
+      }
+      div.syntaxhighlighter  {
+        padding-left:30px;
+        width:90% !important;
+        overflow:hidden !important;
+      }
+      
+      div.minicode,
+      div.minicode * {
+        font-size:0.82em !important;
+      }
+      
+      table.compare td.yes {
+        background-color:#0D0;
+      }
+      table.compare td.no {
+        background-color:#F66;
+      }
+    </style>
+
+    <script>
+    
+        SyntaxHighlighter.defaults['toolbar'] = false;
+        //SyntaxHighlighter.defaults['gutter'] = false;
+        //SyntaxHighlighter.defaults['ruler'] = false;
+        
+      var friendWindows = [];
+      var idx = 1;
+      var slides;
+
+      /* main() */
+
+      window.onload = function() {
+        
+        slides = document.querySelectorAll("body > section");
+        onhashchange();
+        setSlide();
+        document.body.className = "loaded";
+        onresize();
+        
+        SyntaxHighlighter.highlight();
+        
+      }
+
+      /* Handle keys */
+
+      window.onkeydown = function(e) {
+        // Don't intercept keyboard shortcuts
+        if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+          return;
+        }
+        if ( e.keyCode == 37 // left arrow
+          || e.keyCode == 33 // page up
+        ) {
+          e.preventDefault();
+          back();
+        }
+        if ( e.keyCode == 39 // right arrow
+          || e.keyCode == 34 // page down
+        ) {
+          e.preventDefault();
+          forward();
+        }
+
+        if ( e.keyCode == 32) { // space
+            e.preventDefault();
+            toggleContent();
+        }
+      }
+
+      /* Adapt the size of the slides to the window */
+
+      window.onresize = function() {
+        var sx = document.body.clientWidth / window.innerWidth;
+        var sy = document.body.clientHeight / window.innerHeight;
+        var transform = "scale(" + (1/Math.max(sx, sy)) + ")";
+        document.body.style.MozTransform = transform;
+        document.body.style.WebkitTransform = transform;
+        document.body.style.OTransform = transform;
+        document.body.style.msTransform = transform;
+        document.body.style.transform = transform;
+      }
+      function getDetails(idx) {
+        var s = document.querySelector("section:nth-of-type("+ idx +")");
+        var d = s.querySelector("details");
+        return d?d.innerHTML:"";
+      }
+      window.onmessage = function(e) {
+        msg = e.data;
+        win = e.source;
+        if (msg === "register") {
+          friendWindows.push(win);
+          win.postMessage(JSON.stringify({method: "registered", title: document.title, count: slides.length}), document.location);
+          win.postMessage(JSON.stringify({method: "newslide", details: getDetails(idx), idx: idx}), document.location);
+          return;
+        }
+        if (msg === "back") back();
+        if (msg === "forward") forward();
+        if (msg === "toggleContent") toggleContent();
+        // setSlide(42)
+        var r = /setSlide\((\d+)\)/.exec(msg);
+        if (r) {
+            idx = r[1];
+            setSlide();
+        }
+      }
+
+      /* If a Video is present in this new slide, play it.
+         If a Video is present in the previous slide, stop it. */
+
+      function toggleContent() {
+        var s = document.querySelector("section[aria-selected]");
+        if (s) {
+            var video = s.querySelector("video");
+            if (video) {
+                if (video.ended || video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+            }
+        }
+      }
+
+      /* If the user change the slide number in the URL bar, jump
+         to this slide. */
+
+      window.onhashchange = function(e) {
+        var newidx = ~~window.location.hash.split("#")[1];
+        if (!newidx) newidx = 1;
+        if (newidx == idx) return;
+        idx = newidx;
+        setSlide();
+      }
+
+      /* Slide controls */
+
+      function back() {
+        if (idx == 1) return;
+        idx--;
+        setSlide();
+      }
+      function forward() {
+        if (idx >= slides.length) return;
+        idx++;
+        setSlide();
+      }
+      function setSlide() {
+        var old = document.querySelector("section[aria-selected]");
+        var next = document.querySelector("section:nth-of-type("+ idx +")");
+        if (old) {
+          old.removeAttribute("aria-selected");
+          var video = old.querySelector("video");
+          if (video) { video.pause(); }
+        }
+        if (next) {
+          next.setAttribute("aria-selected", "true");
+          var video = next.querySelector("video");
+          if (video) { video.play(); }
+        } else {
+          console.warn("No such slide: " + idx);
+          idx = 0;
+          for (var i = 0; i < slides.length; i++) {
+              if (slides[i].hasAttribute("aria-selected")) {
+                  idx = i + 1;
+              }
+          }
+        }
+        window.location.hash = idx;
+        for (var i = 0; i < friendWindows.length; i++) {
+            friendWindows[i].postMessage(JSON.stringify({method: "newslide", details: getDetails(idx), idx: idx}), document.location);
+        }
+      }
+    </script>
+    <!-- vim: set fdm=marker: }}} -->
+
+</head>
+<body>
+
+
+    <section>
+        <!-- This is the first slide -->
+        <h1>Introducing...</h1>
+        <br/><br/>
+        <div style='width:100%;text-align:center'><img src="img/sencha_logo.png"/></div>
+        <footer>by Julien Bouquillon <a href='http://www.revolunet.com'><img width=50 height=50 style='vertical-align:middle' src="img/logo-revolunet-carre.jpg" border=0 /></a></footer>
+    </section>
+
+    <section>
+        <br/><br/><br/><br/>
+        <h1>The right tool...</h1>
+    </section>
+    
+    <section>
+        <br/><br/><br/><br/>
+        <h1>For the right job </h1>
+    </section>
+    
+    <section>
+        <h2>what is Sencha ?</h2>
+        <ul>
+            <li>
+                 <a href='#'>Ext.Core</a>
+                <div class="detail">minimal JS lib : DOM, Tasks, Events, Ajax, Fx...</div>
+            </li>
+            <li>
+                 <a href='#'>ExtJs / ExtGwt</a>
+                <div class="detail">
+                    Professionnal rich interfaces javascript Framework<br/>
+                    Powerful data package for any data source<br/>
+                    Many many widgets, (very) extensibles and (very) re-usables<br/>
+                </div>
+            </li>
+            <li>
+                 <a href='#'>Sencha Touch</a>
+                <div class="detail">
+                    Cross-device javascript wep app framework<br/>
+                    Enhanced Touch & Gestures support, native look'n'feel<br/>
+                    ExtJs web application logic, add widgets for mobile
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Sencha History</h2>
+        <ul class="history">
+            <li>01 / 2006<div class="detail">Jack Slocum developed an extension to YUI called yui-ext</div></li>
+            <li>06 / 2006<div class="detail">ExtJs 1.1 made lib-independant (standalone or YUI, Jquery, Protoype adapt  er)</div></li>
+            <li>04 / 2008<div class="detail">ExtJS 2.0 moved from BSD to <a href='#'>dual licence</a> GPLv3 + commercial</div></li>
+            <li>07 / 2009<div class="detail">ExtJs 3.0</div></li>
+            <li>06 / 2010<div class="detail" style="color:#FF0066">RaphaëlJS + JQTouch + theJIT + ExtJS = Sencha</div></li>
+            <li>05 / 2011<div class="detail">Sencha Touch 1.0, ExtJs 4.0</div></li>
+        </ul>
+    </section>
+
+    <section>
+        <br/><br/>
+        <h2>Sencha for the Desktop
+        <br/><br/>
+        <a href='#'>ExtJs</a>
+        
+        </h2>
+    </section>
+    
+    <section>
+        <br/><br/>
+        <h2>What can we do with ExtJs</h2>
+        <br/><br/>
+        <h4><a href='#'>Most advanced</a> desktop web apps on earth</h4>
+    </section>
+    
+    <section>
+        
+            <h2>ExtJS <a href='#'>Pros</a></h2>
+            <br/><br/>
+            <ul> 
+                <li style="font-size:0.8em">MVC application oriented code (VS widgets)</li>
+                <li style="font-size:0.8em">Huge widgets choice, helpers for daily web devs problems</li>
+                <li style="font-size:0.8em">Data package, Layouts, XTemplates, Routers...</li>
+                <li style="font-size:0.8em">Well documented API, clean code, pro oriented solution</li>
+                <li style="font-size:0.8em">Very re-usable code, excellent cross-browser compatibility</li>
+                <li style="font-size:0.8em">Minimize server load (only statics & Json responses needed)</li>
+            </ul>
+    </section>
+    
+    <section>
+        
+            <h2>ExtJS <a href='#'>Cons</a></h2>
+            <br/><br/>
+            <ul> 
+                <li style="font-size:0.9em">Slow learning curve, very different approach (OO)</li>
+                <li style="font-size:0.9em">Quite Slow UI with many widgets (big DOM)</li>
+                <li style="font-size:0.9em">700kb footprint</li>
+                <li style="font-size:0.9em">Horrific debug !</li>
+            </ul>   
+    </section>
+     
+    <section>
+        <h2>ExtJs data package</h2>
+        <br/>
+        <ul>
+            <li><a href='#'>Data Source abstraction</a>
+                <div class="detail">
+                    AJAX, ScriptTag (JSONP)<br/>
+                    Xml reader<br/>
+                    Datas Proxys, REST compliants (read/write)<br/>
+                    ExtDirect = multiple REST in one request !
+                </div>
+            </li>
+            <li><a href='#'>Data bindings</a>
+                <div class="detail">
+                    MVC patterns in ExtJS 4.0<br/>
+                    Bind data to components regardless source type<br/>
+                    Auto-update widgets on data-change (event based)<br/>
+                    Data stores handles data validation & server submission   
+                </div>
+            </li>
+        </ul>
+    </section>   
+
+    <section>
+        <h2>ExtJs examples (1)</h2>
+        <center>
+            <br/>
+            <img src="img/easyintranet-home.png" width="600" style="border:2px solid silver"    />
+            <br/>
+            <a href="http://easyintranet.fr">http://easyintranet.fr</a>
+        </center>
+    </section>    
+    
+    <section>
+        <h2>ExtJs examples (2)</h2>
+        <center>
+            <br/>
+            <img src="img/filebrowser1.jpg" width="500" style="border:2px solid silver"    />
+            <a href="http://github.com/revolunet/Ext.ux.FileBrowser">http://github.com/revolunet/Ext.ux.FileBrowser</a>
+        </center>
+    </section>   
+
+    <section>
+        <h2>ExtJs code sample (1)</h2>
+ 
+        <div>
+            <pre class="brush: js;">
+                Ext.create('Ext.data.Store', {
+                    storeId:'usersStore'
+                    autoLoad:true,
+                    pageSize: 25,
+                    proxy: {
+                        type: 'ajax',
+                        url : '/path/to/user-list.php',
+                        reader: {
+                            type: 'json',
+                            root: 'users'
+                        }
+                    }
+                });
+                
+                Ext.create('Ext.grid.Panel', {
+                    title:'Users List',
+                    store:'usersStore',
+                    dockedItems: [{
+                        xtype: 'pagingtoolbar',
+                        store: 'usersStore', 
+                        dock: 'bottom',
+                        displayInfo: true
+                    }],
+                    renderTo: Ext.getBody()
+                });
+            
+            </pre>
+        </div>
+    </section>    
+    
+    
+    <section>
+        <h2>ExtJs code sample (2)</h2>
+ 
+        <div>
+            <pre class="brush: js;">
+            
+                Ext.define('MyApp.UserGridPanel', {
+                    extend: 'Ext.grid.Panel',
+                    title: 'Users list',
+                    initComponent: function() {
+                        var userStore = new Ext.data.store({
+                            autoLoad:true,
+                            pageSize: 25,
+                            proxy: {
+                                type: 'ajax',
+                                url : '/path/to/user-list.php',
+                                reader: {
+                                    type: 'json',
+                                    root: 'users'
+                                }
+                            }
+                        });
+                        Ext.apply(this, {
+                            store:userStore,
+                            dockedItems: [{
+                                xtype: 'pagingtoolbar',
+                                dock: 'bottom',
+                                displayInfo: true,
+                                store:userStore
+                            }],
+                        });
+                        MyApp.UserGridPanel.superclass.initComponent.apply(this, arguments);
+                    }
+                });
+                  
+            </pre>
+        </div>
+    </section>    
+    
+    <section>
+        <br/><br/>
+        <h2>Sencha for the Mobile
+        <br/><br/>
+        <a href='#'>Sencha Touch</a>
+        
+        </h2>
+    </section>
+
+    <section>
+        <br/><br/>
+        <h2>What we can do with Sencha Touch</h2>
+        <br/><br/>
+        <h4><a href='#'>Cross device</a> web apps for the mass</h4>
+    </section>
+    
+    <section>
+        <br/>
+        <h2>native VS web apps VS phonegap</h2>
+        <br/>
+        <center>
+        <table class="compare" width="700" align="center"   >
+            <tr>
+                <td>&nbsp;</td>
+                <td align=center width=160 >Native</td>
+                <td align=center width=160  >Web App</td>
+                <td align=center width=160  >Hybrid</td>
+            </tr>
+            <tr>
+                <td style='font-size:0.7em'>Device API</td>
+                <td class=yes ></td>
+                <td class=no ></td>
+                <td class=yes ></td>
+            </tr>
+            <tr>
+                <td style='font-size:0.7em'>Store / Market</td>
+                <td class=yes ></td>
+                <td class=no ></td>
+                <td class=yes ></td>
+            </tr>
+            <tr>
+                <td style='font-size:0.7em'>Cross-device dev</td>
+                <td class=no ></td>
+                <td class=yes ></td>
+                <td class=yes ></td>
+            </tr>
+            <tr>
+                <td style='font-size:0.7em'>Instant update</td>
+                <td class=no ></td>
+                <td class=yes ></td>
+                <td class=yes ></td>
+            </tr>
+            <tr>
+                <td style='font-size:0.7em'>Linkable</td>
+                <td class=no ></td>
+                <td class=yes ></td>
+                <td class=yes ></td>
+            </tr>
+            <tr>
+                <td style='font-size:0.7em'>Offline</td>
+                <td class=yes ></td>
+                <td class=yes ></td>
+                <td class=yes ></td>
+            </tr>
+        </table>
+        </center>
+    </section>
+    
+    
+    <section>    
+        <h2>Sencha Touch <a href='#'>Pros</a></h2>
+        <br/><br/>
+        <ul>                
+                <li style="font-size:0.7em">As ExtJs : Professional solution, good doc, extensibility & reusability</li>
+                <li style="font-size:0.7em">Mobile widgets available (eg: Lists, Carousel, Forms, Tabs, Maps...)</li>
+                <li style="font-size:0.7em">Fixed positioned elements and scrollable content (momentum & bounce)</li>
+                <li style="font-size:0.7em">Apps can mix sencha widgets (SASS themables) and custom HTML/CSS</li>
+                <li style="font-size:0.7em">Powerful Data package, HTML5 features (localStorage, multimedia...)</li>
+                <li style="font-size:0.7em">Phonegap integration</li>
+
+        </ul>
+    </section>
+    <section>    
+        <h2>Sencha Touch <a href='#'>Cons</a></h2>
+         <br/><br/>
+        <ul>
+                <li style="font-size:0.8em">iOS oriented, a  bit slower in Android browser (no GPU)</li>
+                <li style="font-size:0.8em">Quite Slow UI with many widgets (big DOM)</li>
+                <li style="font-size:0.8em">400kb footprint</li>
+                <li style="font-size:0.8em">(Very) horrific debug !</li>
+                </div>
+            </li>
+        </ul>
+    </section> 
+        
+    <section>
+        <h2 style='margin-bottom:20px'  >Sencha Touch examples (1)</h2>
+        <center>
+            
+            <img src="img/SenchaTouch.jpg   " width="600"    />
+            <br/>
+          
+        </center>
+    </section>  
+        
+    <section>
+        <h2 style='margin-bottom:20px'  >Sencha Touch examples (2)</h2>
+        <center>
+            
+            <img src="img/bd-shot2.jpg" width="500"   />
+            <br/>
+            <a href="http://digimag.bellesdemeures.com">http://digimag.bellesdemeures.com</a>
+        </center>
+    </section> 
+    
+    <section>
+        <h2>Sencha Touch code sample</h2>
+        
+         <div class="minicode">
+            <pre class="brush: js; ">
+                        
+                var App = new Ext.Application({
+                    name : 'QuizzApp',
+                    launch : function () {
+                        QuizzApp.views.home = new Ext.Panel({                            // home screen
+                            items:[
+                                { html:'<div class="home"><div class="title">welcome to supa quizz</div><div class="logo"></div></div>' },
+                                new Ext.Button({
+                                    text:'Start now!',
+                                    handler: function () {
+                                            // show questions
+                                            QuizzApp.views.viewport.setActiveItem('questions', {type: 'slide', direction: 'left'});
+                                        }
+                                })
+                            ],
+                            dockedItems: new Ext.Toolbar({
+                                title: 'Supa Quizz test app'
+                            })
+                            [...],
+                        });
+                        QuizzApp.views.questions = new Ext.Carousel({                   // questions carousel
+                            id:'questions',
+                            direction:'horizontal',
+                            items:[],
+                            cardTpl:new Ext.XTemplate(
+                                '<div class="question">',
+                                    '<tpl for="."><div class="text">{text}</div><div class="image" style="background-image:url({image});"></div></tpl>',
+                                '</div>'
+                            ),
+                            listeners:{
+                                beforeactivate:function() {
+                                    Ext.getStore('QuestionStore').load();
+                                }
+                            }   
+                        });
+                        QuizzApp.views.viewport = new Ext.Panel({                       // main viewport
+                            fullscreen: true,
+                            layout:'card',
+                            cardAnimation:'slide',
+                            items:[
+                                QuizzApp.views.home,
+                                QuizzApp.views.questions,
+                                QuizzApp.views.results,
+                                [...]
+                            ]
+                        });
+                    }
+                });
+
+
+            </pre>
+        </div>
+        
+    </section>    
+
+    <section>
+        <h1>Useful pointers</h1>
+        <br/><br/>
+        
+        <ul>
+            <li><a href="http://docs.sencha.com">docs.sencha.com</a> and <a href="http://dev.sencha.com/deploy/ext-4.0.2a/examples/">sample pages</a></li>
+        </ul>
+    
+        <ul>
+            <li>sourc{ conf : <a href='http://vimeo.com/groups/sourcedevcon'> vimeo.com/groups/sourcedevcon</a></li>
+        </ul>
+        
+         <ul>
+            <li><a href='http://jsconsole.com/'>jsconsole.com</a></li>
+        </ul>
+        
+        <ul>
+            <li><a href='http://www.illuminations-for-developers.com'>illuminations</a> Firebug extension</li>
+        </ul>
+        
+        <ul>
+            <li><a href='https://chrome.google.com/webstore/detail/cllkoedgiefnomcccogcalmjogjfcpji'>MobileResizer</a> Chrome extension</li>
+        </ul>
+        
+    </section>
+
+
+    <section>
+        <br/><br/><br/>
+        <h1>Questions ?</h1>
+    </section>
+
+        
+    <section>
+        <h3>Thanks : </h3>
+        <h4>ParisJS team</h4>
+        <h4>Gary & Remi for support</h4>
+        <h4>@paulrouget (Mozilla) for DZslides</h4>
+        
+        <br/>
+        
+        <h4 style="color:#777">Twitter : <a href='http://twitter.com/revolunet' style='text-decoration:none;color:#777'>revolunet</a></h4>
+        <h4 style="color:#777">Github : <a href='http://github.com/revolunet' style='text-decoration:none;color:#777'>revolunet</a></h4>
+        <h4 style="color:#777">Email : <a href='mailto:julien@revolunet.com' style='text-decoration:none;color:#777'>julien@revolunet.com</a></h4>
+      
+        <h4 style="margin-top:20px"><a href='http://www.revolunet.com'><img width=100 height=100 style='vertical-align:middle' src="img/logo-revolunet-carre.jpg" border=0 /></a></h4>
+
+    </section>
+
+</body>
